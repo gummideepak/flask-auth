@@ -1,26 +1,46 @@
 """A simple flask web app"""
 import flask_login
-from flask import Flask, render_template
+import os
+import datetime
+import time
+
+from flask import g, request
+from rfc3339 import rfc3339
+
+from flask import render_template, Flask, has_request_context, request
 from flask_bootstrap import Bootstrap5
 from flask_wtf.csrf import CSRFProtect
 
-import os
-from flask import Flask
-from app.context_processors import utility_text_processors
-from app.simple_pages import simple_pages
+from app.logging_config import logging_blueprint
+
 from app.auth import auth
-from app.exceptions import http_exceptions
-from app.db.models import User
-from app.db import db
 from app.auth import auth
 from app.cli import create_database
-
+from app.context_processors import utility_text_processors
+from app.db import db
+from app.db.models import User
+from app.exceptions import http_exceptions
+from app.simple_pages import simple_pages
+import logging
+from flask.logging import default_handler
 
 login_manager = flask_login.LoginManager()
 
 
 def page_not_found(e):
     return render_template("404.html"), 404
+
+
+class RequestFormatter(logging.Formatter):
+    def format(self, record):
+        if has_request_context():
+            record.url = request.url
+            record.remote_addr = request.remote_addr
+        else:
+            record.url = None
+            record.remote_addr = None
+
+        return super().format(record)
 
 
 def create_app():
@@ -40,11 +60,13 @@ def create_app():
     db_dir = "database/db.sqlite"
     app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///" + os.path.abspath(db_dir)
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-
     db.init_app(app)
     # add command function to cli commands
     app.cli.add_command(create_database)
-    # Setup Flask-User and specify the User data-model
+
+    # Deactivate the default flask logger so that log messages don't get duplicated
+    app.logger.removeHandler(default_handler)
+    app.register_blueprint(logging_blueprint)
 
     return app
 

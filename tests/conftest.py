@@ -3,6 +3,7 @@
 
 import pytest
 from app import create_app
+from app.cli import create_log_folder
 
 
 @pytest.fixture()
@@ -25,3 +26,7 @@ def client(application):
 def runner(application):
     """This makes the task runner"""
     return application.test_cli_runner()
+
+@pytest.fixture()
+def make_log_folder(runner):
+    runner.invoke(create_log_folder)
