@@ -32,7 +32,7 @@ def songs_upload():
     form = csv_upload()
     if form.validate_on_submit():
         log = logging.getLogger("myApp")
-
+        log.info(current_user.email + ' uploaded a playlist.')
         filename = secure_filename(form.file.data.filename)
         filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
         form.file.data.save(filepath)
