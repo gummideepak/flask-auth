@@ -2,6 +2,7 @@
 # pylint: disable=redefined-outer-name
 import logging
 import os
+import flask_login
 
 import pytest
 from app import create_app, User
@@ -31,9 +32,10 @@ def application():
 def add_user(application):
     with application.app_context():
         #new record
-        user = User('keith@webizly.com', 'testtest')
+        user = User('deepak@njit.edu', 'qwerty1234')
         db.session.add(user)
         db.session.commit()
+        return user
 
 
 
