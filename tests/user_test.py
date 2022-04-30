@@ -25,7 +25,7 @@ def test_adding_user(application):
         #asserting that the user retrieved is correct
         assert user.email == 'keith@webizly.com'
         #this is how you get a related record ready for insert
-        user.songs= [Song("test","smap"),Song("test2","te")]
+        user.songs= [Song("test","smap",1),Song("test2","te",1)]
         #commit is what saves the songs
         db.session.commit()
         assert db.session.query(Song).count() == 2
@@ -92,6 +92,21 @@ def test_user_login_access(application, client):
         response = client.post('/login', data=data, follow_redirects=True)
         response = client.get('/users', follow_redirects=True)
         assert response.status_code == 200
+
+
+def test_unauthorized_users(application, client):
+    with application.app_context():
+        #logout if alredy logged in
+        response = client.post('/logout', follow_redirects=True)
+        response = client.get('/users', follow_redirects=True)
+        assert b'Please log in to access this page.' in response.data
+
+def test_unauthorized_upload(application, client):
+    with application.app_context():
+        #logout if alredy logged in
+        response = client.post('/logout', follow_redirects=True)
+        response = client.get('/songs/upload', follow_redirects=True)
+        assert b'Please log in to access this page.' in response.data
 
 def extract_csrf_token(page):
     start = page.find('name="csrf_token" type="hidden" value="')+len('name="csrf_token" type="hidden" value="')

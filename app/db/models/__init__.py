@@ -15,9 +15,10 @@ class Song(db.Model,SerializerMixin):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     user = relationship("User", back_populates="songs", uselist=False)
 
-    def __init__(self, title, artist):
+    def __init__(self, title, artist, user_id):
         self.title = title
         self.artist = artist
+        self.user_id = user_id
 
 class Location(db.Model, SerializerMixin):
     __tablename__ = 'locations'
